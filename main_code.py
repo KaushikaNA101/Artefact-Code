@@ -169,7 +169,7 @@ def train_model():
 
     # Creating Logistic Regression Model Using TF-IDF
     # Hyperparamet Tuning of setting the solver and max iteration count is apllied from its default 100
-    # sag solver provided the highest accuracy with the cost of time to compute
+    # sag solver provided the highest accuracy for a large dataset with the cost being time to compute
     # Penalty is set to L2 regularization to aid in giving weight to important feature tokens
     LRG_TFIDF = LogisticRegression(solver='sag', max_iter=400, penalty= "l2")  # 100 to 300 provided convergence issues
     # The model is fitted with features obtanined from the traning features of the url data and target variable
@@ -241,7 +241,7 @@ def train_model():
     print("\nAccuracy Score:", accuracy_LRG_TFIDF)
 
 
-
+## Stage 2: Short URL Check, Conversion and Prediction ##
 # Regular expression pattern to match common short URL services
 short_url_service_pattern = re.compile(
     r'(bit\.ly|goo\.gl|shorte\.st|go2l\.ink|x\.co|ow\.ly|t\.co|tinyurl|tr\.im|is\.gd|cli\.gs|'
@@ -255,7 +255,7 @@ short_url_service_pattern = re.compile(
 )
 
 # Function to check if a URL is short
-def is_short_url(url):
+def short_url_check(url):
     # Check if the URL matches the short URL pattern
     if re.search(short_url_service_pattern, url):
         return True
@@ -264,10 +264,14 @@ def is_short_url(url):
         return True
     return False
 
-def extract_long_url(url):
+def extracting_long_url(url):
     try:
-        response = requests.head(url, allow_redirects=True)
+      with requests.session() as session:
+        # Checkes status code of the HTTP header 
+        # follows redirects to obtain Long URL
+        response = session.head(url, allow_redirects=True)
         if response.status_code == 200:
+        #Returns Long URL if sucessfull
             return response.url
         else:
             return url
@@ -278,8 +282,8 @@ def extract_long_url(url):
 # Function to classify a custom URL
 def classify_custom_url(custom_url):
     # Check if the user-provided URL is short
-    if is_short_url(custom_url):
-        long_url = extract_long_url(custom_url)
+    if short_url_check(custom_url):
+        long_url = extracting_long_url(custom_url)
         print("Long URL:", long_url)
         return validateCustomURl(long_url)
     else:
@@ -297,39 +301,39 @@ def validateCustomURl(url):
     prediction = model.predict(url_vectorized)
     print("Classification Result:", prediction[0])
 
-
+## Stage 3 : Polymorphism Check ##
 def check_polymorphic_url(user_url):
     # Rule Counter is set to 0 at the start
     Res = 0
     # Dynamic Path check for characters that contain 1 - 10 numbers after every word
-    dynamic_path_pattern = re.compile(r'/\w+/\d{1,10}/')  
+    dynamic_path_check = re.compile(r'/\w+/\d{1,10}/')  
     # If regular expression patter is found (true) the res counter is increased by one
-    test1 = bool(dynamic_path_pattern.search(user_url))
-    if test1:
+    check1 = bool(dynamic_path_check.search(user_url))
+    if check1:
         Res += 1
         print("Dynamic Path Detected")
     # Query Parameter Count in URL
     parsed_url = urlparse(user_url)
     query_params = parse_qs(parsed_url.query)
     # If the URL supplied has more than one 3 query parameters the counter is increased by one again
-    test2 = any(len(values) > 3 for values in query_params.values())
-    if test2:
+    check2 = any(len(values) > 3 for values in query_params.values())
+    if check2:
         Res += 1
         print("Query Parameters Detected")
     # Randomization check for random letters and digits in the URL
     random_chars = sum(1 for char in user_url if char in string.ascii_letters + string.digits)
-    # If the threshold for random characters is 50% for the total URL, the counter is increased again
-    test3 = random_chars / len(user_url) > 0.5
-    if test3:
+    # If the threshold for random characters is 30% for the total URL, the counter is increased again
+    check3 = random_chars / len(user_url) > 0.3
+    if check3:
         Res += 1
         print("Randomization Detected")
     # Encoding presnece count for more than 2 instances of Encoder Manipulation
     decoded_url = urllib.parse.unquote(user_url)
-    test4 = decoded_url.count('%')
+    check4 = decoded_url.count('%')
     # If the encoding count is more than 2, the counter gets increased further
-    if test4 > 2:
+    if check4 > 2:
         Res += 1
-        print("URL Encoding3 Detected")
+        print("High URL Encoding Detected")
     # If the count is between 0 and 2, output is no polymorphism
     if 0 < Res < 2:
         print("Polymorphic URL Status: No Polymorphic Detected!")
@@ -375,10 +379,5 @@ while True:
     # Forces the model to only except between choice 1,2,3 and 4
     else:
         print("Invalid choice. Please enter 1, 2, or 3.")
-
-
-
-
-
 
 
