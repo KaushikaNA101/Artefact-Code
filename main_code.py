@@ -263,20 +263,18 @@ def short_url_check(url):
     if len(url) < 30:
         return True
     return False
-
+# Extracting the long URL by following potential redirects and return Long URL
 def extracting_long_url(url):
     try:
-      with requests.session() as session:
-        # Checkes status code of the HTTP header 
-        # follows redirects to obtain Long URL
-        response = session.head(url, allow_redirects=True)
+        response = requests.head(url, allow_redirects=True)
         if response.status_code == 200:
-        #Returns Long URL if sucessfull
             return response.url
         else:
             return url
+# Error Exceptions during network and URL unavlability retruns the Long URL
     except requests.exceptions.RequestException:
         return url
+
 
 
 # Function to classify a custom URL
