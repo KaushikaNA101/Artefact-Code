@@ -332,11 +332,11 @@ def check_polymorphic_url(user_url):
     if check4 > 2:
         Res += 1
         print("High URL Encoding Detected")
-    # If the count is between 0 and 1, output is no polymorphism
-    if 0 < Res < 1:
-        print("Polymorphic URL Status: No Polymorphic Detected!")
-    # If the count is between 2 and 3, output is Dynamic URL
-    elif 2 < Res < 3:
+    # If the count is 1 output is no polymorphism
+    if Res == 1:
+        print("Polymorphic URL Status: No Polymorphic Or Dynamic Properties Detected!")
+    # If the count is 2 output is Dynamic URL
+    elif Res == 2:
         print("Polymorphic URL Status: Dynamic URL!")
     # If all checks match, the output is Poylmorphic URL
     else:
