@@ -313,15 +313,15 @@ def check_polymorphic_url(user_url):
     # Query Parameter Count in URL
     parsed_url = urlparse(user_url)
     query_params = parse_qs(parsed_url.query)
-    # If the URL supplied has more than one 3 query parameters the counter is increased by one again
-    check2 = any(len(values) > 3 for values in query_params.values())
+    # If the URL supplied has more than one 2 query parameters the counter is increased by one again
+    check2 = any(len(values) > 2 for values in query_params.values())
     if check2:
         Res += 1
         print("Query Parameters Detected")
     # Randomization check for random letters and digits in the URL
     random_chars = sum(1 for char in user_url if char in string.ascii_letters + string.digits)
-    # If the threshold for random characters is 30% for the total URL, the counter is increased again
-    check3 = random_chars / len(user_url) > 0.3
+    # If the threshold for random characters is 20% for the total URL, the counter is increased again
+    check3 = random_chars / len(user_url) > 0.2
     if check3:
         Res += 1
         print("Randomization Detected")
@@ -332,8 +332,8 @@ def check_polymorphic_url(user_url):
     if check4 > 2:
         Res += 1
         print("High URL Encoding Detected")
-    # If the count is between 0 and 2, output is no polymorphism
-    if 0 < Res < 2:
+    # If the count is between 0 and 1, output is no polymorphism
+    if 0 < Res < 1:
         print("Polymorphic URL Status: No Polymorphic Detected!")
     # If the count is between 2 and 3, output is Dynamic URL
     elif 2 < Res < 3:
